@@ -29,7 +29,7 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('>> DASHBOARD'),
+        title: const Text('>> 管理面板'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: AppColors.mutedText),
@@ -49,7 +49,7 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Quick actions
-            _buildSectionLabel('QUICK_ACTIONS'),
+            _buildSectionLabel('快速操作'),
             const SizedBox(height: 8),
 
             _buildQuickActions(context),
@@ -85,8 +85,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.terminal,
-                label: 'TERMINAL',
-                subtitle: 'Ubuntu shell',
+                label: '终端',
+                subtitle: 'Ubuntu 命令行',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const TerminalScreen()),
                 ),
@@ -102,12 +102,12 @@ class DashboardScreen extends StatelessWidget {
                       : null;
                   return _buildActionCard(
                     icon: Icons.dashboard,
-                    label: 'DASHBOARD',
+                    label: '管理后台',
                     subtitle: provider.state.isRunning
                         ? (token != null
                             ? 'Token: ${token.substring(0, token.length > 8 ? 8 : token.length)}...'
                             : 'Web UI')
-                        : 'Start gateway',
+                        : '启动服务',
                     trailing: token != null
                         ? IconButton(
                             icon: const Icon(Icons.copy, color: AppColors.mutedText, size: 16),
@@ -140,8 +140,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.vpn_key,
-                label: 'API_KEYS',
-                subtitle: 'Configure providers',
+                label: 'API 配置',
+                subtitle: '配置 AI 服务商',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const OnboardingScreen()),
                 ),
@@ -151,8 +151,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.model_training,
-                label: 'PROVIDERS',
-                subtitle: 'Models & settings',
+                label: 'AI 服务商',
+                subtitle: '模型与设置',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ProvidersScreen()),
                 ),
@@ -168,8 +168,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.tune,
-                label: 'CONFIGURE',
-                subtitle: 'Gateway settings',
+                label: '配置',
+                subtitle: 'Gateway 设置',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const ConfigureScreen()),
                 ),
@@ -180,7 +180,7 @@ class DashboardScreen extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.terminal,
                 label: 'SSH',
-                subtitle: 'Remote access',
+                subtitle: '远程连接',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SshScreen()),
                 ),
@@ -196,8 +196,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.article_outlined,
-                label: 'LOGS',
-                subtitle: 'Gateway output',
+                label: '日志',
+                subtitle: 'Gateway 输出',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const LogsScreen()),
                 ),
@@ -207,7 +207,7 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.extension,
-                label: 'PACKAGES',
+                label: '组件',
                 subtitle: 'Go, Homebrew, SSH',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const PackagesScreen()),
@@ -227,8 +227,8 @@ class DashboardScreen extends StatelessWidget {
                   final ns = nodeProvider.state;
                   return _buildActionCard(
                     icon: Icons.devices,
-                    label: 'NODE',
-                    subtitle: ns.isPaired ? 'Connected' : ns.statusText,
+                    label: '节点',
+                    subtitle: ns.isPaired ? '已连接' : ns.statusText,
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const NodeScreen()),
                     ),
@@ -240,8 +240,8 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.backup,
-                label: 'SNAPSHOT',
-                subtitle: 'Backup & restore',
+                label: '快照',
+                subtitle: '备份与恢复',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 ),

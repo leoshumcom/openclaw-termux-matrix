@@ -116,7 +116,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '> SYSTEM_INIT',
+              '> 初始化系统',
               style: TextStyle(
                 color: AppColors.matrixGreen,
                 fontSize: 18,
@@ -153,7 +153,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
             child: Text(
               _started && !state.isComplete
                   ? '> ${state.message}'
-                  : '> awating_init...',
+                  : '> 等待初始化...',
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -167,11 +167,11 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
 
   Widget _buildSteps(SetupState state) {
     final steps = [
-      (1, 'DOWNLOAD_ROOTFS', SetupStep.downloadingRootfs),
-      (2, 'EXTRACT_ROOTFS', SetupStep.extractingRootfs),
-      (3, 'INSTALL_NODEJS', SetupStep.installingNode),
-      (4, 'INSTALL_OPENCLAW', SetupStep.installingOpenClaw),
-      (5, 'CONFIGURE_SYSTEM', SetupStep.configuringBypass),
+      (1, '下载系统镜像', SetupStep.downloadingRootfs),
+      (2, '解压系统文件', SetupStep.extractingRootfs),
+      (3, '安装 Node.js', SetupStep.installingNode),
+      (4, '安装 OpenClaw', SetupStep.installingOpenClaw),
+      (5, '配置系统环境', SetupStep.configuringBypass),
     ];
 
     return ListView(
@@ -179,10 +179,10 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
         ...steps.map((s) => _buildStepTile(s.$1, s.$2, s.$3, state)),
         if (state.isComplete) ...[
           const SizedBox(height: 12),
-          _buildStepTile(6, 'SETUP_COMPLETE', null, state),
+          _buildStepTile(6, '设置完成 ✓', null, state),
           const SizedBox(height: 24),
           // Optional packages section
-          _buildSectionLabel('OPTIONAL_PACKAGES'),
+          _buildSectionLabel('可选组件'),
           const SizedBox(height: 8),
           for (final pkg in OptionalPackage.all)
             _buildPackageTile(pkg),
@@ -344,7 +344,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     textStyle: const TextStyle(fontSize: 11),
                   ),
-                  child: const Text('INSTALL'),
+                  child: const Text('安装'),
                 ),
               ),
       ),
@@ -390,7 +390,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           size: 18,
         ),
         label: Text(
-          state.hasError ? '>> RETRY_SETUP' : '>> BEGIN_SETUP',
+          state.hasError ? '>> 重试安装' : '>> 开始安装',
           style: const TextStyle(letterSpacing: 2),
         ),
       ),
@@ -404,7 +404,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
         onPressed: () => _goToDashboard(context),
         icon: const Icon(Icons.settings, size: 18),
         label: const Text(
-          '>> CONFIGURE_API',
+          '>> 进入管理面板',
           style: TextStyle(letterSpacing: 2),
         ),
       ),

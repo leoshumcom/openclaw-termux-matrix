@@ -36,7 +36,7 @@ class GatewayControls extends StatelessWidget {
                   const Icon(Icons.dns, color: AppColors.matrixGreen, size: 20),
                   const SizedBox(width: 8),
                   const Text(
-                    'GATEWAY',
+                    '服务状态',
                     style: TextStyle(
                       color: AppColors.matrixGreen,
                       fontSize: 14,
@@ -122,7 +122,7 @@ class GatewayControls extends StatelessWidget {
                       onPressed: () => provider.start(),
                       icon: const Icon(Icons.play_arrow, size: 16),
                       label: const Text(
-                        '>> START',
+                        '>> 启动',
                         style: TextStyle(letterSpacing: 1, fontSize: 12),
                       ),
                     ),
@@ -131,7 +131,7 @@ class GatewayControls extends StatelessWidget {
                       onPressed: () => provider.stop(),
                       icon: const Icon(Icons.stop, size: 16),
                       label: const Text(
-                        '>> STOP',
+                        '>> 停止',
                         style: TextStyle(letterSpacing: 1, fontSize: 12),
                       ),
                     ),
@@ -141,7 +141,7 @@ class GatewayControls extends StatelessWidget {
                     ),
                     icon: const Icon(Icons.article_outlined, size: 16),
                     label: const Text(
-                      '>> LOGS',
+                      '>> 日志',
                       style: TextStyle(letterSpacing: 1, fontSize: 12),
                     ),
                   ),
@@ -162,19 +162,19 @@ class GatewayControls extends StatelessWidget {
     switch (status) {
       case GatewayStatus.running:
         color = AppColors.statusGreen;
-        label = 'RUNNING';
+        label = '运行中';
         icon = '●';
       case GatewayStatus.starting:
         color = AppColors.statusAmber;
-        label = 'STARTING';
+        label = '启动中';
         icon = '◐';
       case GatewayStatus.error:
         color = AppColors.statusRed;
-        label = 'ERROR';
+        label = '错误';
         icon = '●';
       case GatewayStatus.stopped:
         color = AppColors.statusGrey;
-        label = 'STOPPED';
+        label = '已停止';
         icon = '○';
     }
 

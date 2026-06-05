@@ -23,7 +23,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  String _status = '> loading...';
+  String _status = '> 加载中...';
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
 
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 800));
 
     try {
-      setState(() => _status = '> check_system...');
+      setState(() => _status = '> 检查系统...');
 
       try { await NativeBridge.setupDirs(); } catch (_) {}
       try { await NativeBridge.writeResolv(); } catch (_) {}
@@ -127,11 +127,11 @@ class _SplashScreenState extends State<SplashScreen>
 
           if (rootfsOk && bashOk) {
             if (!bypassOk) {
-              setState(() => _status = '> repair_bypass...');
+              setState(() => _status = '> 修复系统组件...');
               await NativeBridge.installBionicBypass();
             }
             if (!nodeOk) {
-              setState(() => _status = '> reinstall_node...');
+              setState(() => _status = '> 重新安装 Node.js...');
               try {
                 final arch = await NativeBridge.getArch();
                 final nodeTarUrl = AppConstants.getNodeTarballUrl(arch);
@@ -143,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen>
               } catch (_) {}
             }
             if (!openclawOk && nodeOk) {
-              setState(() => _status = '> reinstall_openclaw...');
+              setState(() => _status = '> 重新安装 OpenClaw...');
               try {
                 const wrapper = '/root/.openclaw/node-wrapper.js';
                 const nodeRun = 'node $wrapper';
@@ -174,7 +174,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _status = '> err: $e');
+        setState(() => _status = '> 错误: $e');
       }
     }
   }
@@ -229,7 +229,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                'based on ${AppConstants.upstreamProject}',
+                '基于 ${AppConstants.upstreamProject}',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 10,
                   color: AppColors.mutedText.withAlpha(100),

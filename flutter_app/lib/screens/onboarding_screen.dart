@@ -11,11 +11,9 @@ import '../services/native_bridge.dart';
 import 'dashboard_screen.dart';
 import 'setup_wizard_screen.dart';
 
-/// Pure-form onboarding — no terminal, no TUI.
-/// Select AI provider, enter API key, test connection, done.
-///
-/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
-/// — MIT License. Modifications © 2026 66哥.
+/// 纯表单配置界面 — 无终端，无 TUI。
+/// 选择 AI 服务商，填写 API Key，测试连接，完成。
+
 class OnboardingScreen extends StatefulWidget {
   final bool isFirstRun;
 
@@ -27,25 +25,23 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _prefs = PreferencesService();
-
-  // Available AI providers
-  late List<AiProvider> _providers;
-  late AiProvider _selectedProvider;
-  late String? _selectedModel;
-
-  // API key controller
   final _apiKeyController = TextEditingController();
 
-  // Gateway binding
-  bool _loopbackOnly = true;
+  final _prefs = PreferencesService();
 
-  // State
-  bool _testing = false;
-  String? _testResult;
+  List<AiProvider> _providers = AiProvider.defaultProviders;
+  late AiProvider _selectedProvider;
+  String? _selectedModel;
   bool _testPassed = false;
+  String? _testResult;
   bool _configSaved = false;
+  bool _loopbackOnly = true;
   bool _initialized = false;
+  bool _isTesting = false;
+
+  List<String> get _availableModels {
+    return _selectedProvider.models;
+  }
 
   @override
   void initState() {
@@ -55,9 +51,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _init() async {
     await _prefs.init();
-    _providers = AiProvider.all;
-    _selectedProvider = _providers.first;
+    final savedProvider = _prefs.lastProvider;
+    _selectedProvider = savedProvider != null
+        ? _providers.firstWhere(
+            (p) => p.id == savedProvider,
+            orElse: () => _providers.first,
+          )
+        : _providers.first;
     _selectedModel = _selectedProvider.defaultModels.first;
+
+    final savedKey = _prefs.getApiKey(_selectedProvider.id);
+    if (savedKey != null) {
+      _apiKeyController.text = savedKey;
+    }
+
     setState(() => _initialized = true);
   }
 
@@ -67,36 +74,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  List<String> get _availableModels =>
-      _selectedProvider.defaultModels;
-
   Future<void> _testConnection() async {
-    if (_apiKeyController.text.trim().isEmpty) return;
+    final apiKey = _apiKeyController.text.trim();
+    if (apiKey.isEmpty) {
+      setState(() {
+        _testResult = '请先输入 API Key';
+        _testPassed = false;
+      });
+      return;
+    }
 
     setState(() {
-      _testing = true;
-      _testResult = null;
+      _isTesting = true;
+      _testResult = '测试中...';
       _testPassed = false;
     });
 
     try {
       final result = await ProviderConfigService.testConnection(
-        providerId: _selectedProvider.id,
-        apiKey: _apiKeyController.text.trim(),
+        provider: _selectedProvider,
+        apiKey: apiKey,
         model: _selectedModel ?? _selectedProvider.defaultModels.first,
       );
 
       if (!mounted) return;
       setState(() {
-        _testing = false;
-        _testResult = result ? 'Connection successful!' : 'Connection failed';
-        _testPassed = result;
+        _isTesting = false;
+        _testResult = result;
+        _testPassed = result.contains('成功') || result.contains('Success');
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _testing = false;
-        _testResult = 'Error: $e';
+        _isTesting = false;
+        _testResult = '连接失败: $e';
         _testPassed = false;
       });
     }
@@ -105,62 +116,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _saveConfig() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Save API key
     final apiKey = _apiKeyController.text.trim();
+
+    // 保存到 SharedPreferences（此时 rootfs 还不存在，不能写文件）
     await _prefs.setApiKey(_selectedProvider.id, apiKey);
+    await _prefs.setString('last_provider', _selectedProvider.id);
+    await _prefs.setString('last_model', _selectedModel ?? _selectedProvider.defaultModels.first);
+    await _prefs.setStringList('configured_providers', [_selectedProvider.id]);
 
-    // Write openclaw.json config
-    final config = {
-      'models': {
-        _selectedProvider.id: {
-          'provider': _selectedProvider.id,
-          'model': _selectedModel ?? _selectedProvider.defaultModels.first,
-          'apiKey': apiKey,
-          'baseUrl': _selectedProvider.baseUrl,
-        },
-      },
-      'bind': _loopbackOnly ? '127.0.0.1' : '0.0.0.0',
-      'port': 18789,
-      'dataDir': '/root/.openclaw',
-    };
-
+    // 也保存到 ProviderConfigService
     try {
-      // Write config file inside proot
-      final filesDir = await NativeBridge.getFilesDir();
-      final configDir = '$filesDir/rootfs/ubuntu/root/.openclaw';
-      Directory(configDir).createSync(recursive: true);
-      File('$configDir/openclaw.json')
-          .writeAsStringSync(const JsonEncoder.withIndent('  ').convert(config));
-
-      await _prefs.setStringList(
-        'configured_providers',
-        [_selectedProvider.id],
-      );
-
-      // Also save the config via provider_config_service
       await ProviderConfigService.saveProviderConfig(
         provider: _selectedProvider,
         apiKey: apiKey,
         model: _selectedModel ?? _selectedProvider.defaultModels.first,
       );
-
-      if (!mounted) return;
-      setState(() => _configSaved = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configuration saved successfully'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save config: $e'),
-          backgroundColor: AppColors.statusRed,
-        ),
-      );
+    } catch (_) {
+      // 非致命错误，忽略
     }
+
+    if (!mounted) return;
+    setState(() => _configSaved = true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('配置已保存 ✓'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _finish() async {
@@ -193,7 +175,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('>> SYSTEM_CONFIG'),
+        title: const Text('>> 系统配置'),
         leading: widget.isFirstRun
             ? null
             : IconButton(
@@ -206,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               onPressed: _finish,
               icon: const Icon(Icons.check, color: AppColors.matrixGreen),
               label: const Text(
-                'DONE',
+                '继续',
                 style: TextStyle(
                   color: AppColors.matrixGreen,
                   letterSpacing: 2,
@@ -228,19 +210,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 24),
 
                 // Provider selection
-                _buildSectionLabel('AI PROVIDER'),
+                _buildSectionLabel('AI 服务商'),
                 const SizedBox(height: 8),
                 _buildProviderSelector(),
                 const SizedBox(height: 20),
 
                 // Model selection
-                _buildSectionLabel('MODEL'),
+                _buildSectionLabel('模型'),
                 const SizedBox(height: 8),
                 _buildModelSelector(),
                 const SizedBox(height: 20),
 
                 // API Key
-                _buildSectionLabel('API KEY'),
+                _buildSectionLabel('API Key'),
                 const SizedBox(height: 8),
                 _buildApiKeyField(),
                 const SizedBox(height: 12),
@@ -250,7 +232,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 const SizedBox(height: 20),
 
                 // Binding option
-                _buildSectionLabel('NETWORK BINDING'),
+                _buildSectionLabel('网络绑定'),
                 const SizedBox(height: 8),
                 _buildBindingSelector(),
                 const SizedBox(height: 24),
@@ -263,8 +245,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     icon: const Icon(Icons.save),
                     label: Text(
                       _configSaved
-                          ? '>> CONFIG_SAVED'
-                          : '>> SAVE_CONFIG',
+                          ? '>> 已保存'
+                          : '>> 保存配置',
                       style: const TextStyle(letterSpacing: 2),
                     ),
                   ),
@@ -290,9 +272,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: Text(
-        '> SYSTEM CONFIGURATION v${AppConstants.version}\n'
-        '> Select your AI provider and enter API key.\n'
-        '> TIP: Use Loopback (127.0.0.1) for local-only access.',
+        '> OpenClaw Matrix 版 v${AppConstants.version}\n'
+        '> 选择 AI 服务商并填写 API Key 即可开始。\n'
+        '> 提示：选「仅本地」则只有本机可访问。',
         style: TextStyle(
           color: AppColors.textSecondary,
           fontSize: 12,
@@ -304,7 +286,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildSectionLabel(String label) {
     return Text(
-      '// ${label.padRight(24, '_')}',
+      '// ${label.padRight(20, '_')}',
       style: const TextStyle(
         color: AppColors.mutedText,
         fontSize: 11,
@@ -356,6 +338,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _testPassed = false;
               _configSaved = false;
             });
+
+            // 如果之前保存过该供应商的 key，自动填入
+            final savedKey = _prefs.getApiKey(p.id);
+            if (savedKey != null) {
+              _apiKeyController.text = savedKey;
+            } else {
+              _apiKeyController.clear();
+            }
           },
         ),
       ),
@@ -390,6 +380,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   color: _selectedModel == m
                       ? AppColors.matrixGreen
                       : AppColors.textSecondary,
+                  fontSize: 13,
                 ),
               ),
             );
@@ -414,61 +405,72 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       style: const TextStyle(
         color: AppColors.matrixGreen,
         fontSize: 13,
+        fontFamily: AppConstants.monoFont,
       ),
-      decoration: const InputDecoration(
-        hintText: 'sk-...',
-        prefixIcon: Icon(
-          Icons.vpn_key,
-          color: AppColors.mutedText,
-          size: 18,
+      decoration: InputDecoration(
+        hintText: '输入你的 API Key',
+        hintStyle: TextStyle(color: AppColors.mutedText.withAlpha(100)),
+        filled: true,
+        fillColor: AppColors.surfaceAlt,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.zero,
+          borderSide: const BorderSide(color: AppColors.matrixGreen, width: 1.5),
+        ),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.paste, color: AppColors.mutedText, size: 18),
+          onPressed: () async {
+            final data = await Clipboard.getData(Clipboard.kTextPlain);
+            if (data?.text != null) {
+              _apiKeyController.text = data!.text!.trim();
+            }
+          },
         ),
       ),
-      obscureText: true,
+      onChanged: (_) {
+        if (_configSaved) {
+          setState(() => _configSaved = false);
+        }
+      },
       validator: (v) {
-        if (v == null || v.trim().isEmpty) return 'API key is required';
+        if (v == null || v.trim().isEmpty) return '请输入 API Key';
         return null;
       },
     );
   }
 
   Widget _buildTestButton() {
-    return Row(
-      children: [
-        OutlinedButton.icon(
-          onPressed: _testing || _apiKeyController.text.trim().isEmpty
-              ? null
-              : _testConnection,
-          icon: _testing
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.matrixGreen,
-                  ),
-                )
-              : const Icon(Icons.wifi_tethering, size: 18),
-          label: Text(_testing ? 'TESTING...' : 'TEST CONNECTION'),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: (_configSaved || _isTesting) ? null : _testConnection,
+        icon: _isTesting
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.matrixGreen,
+                ),
+              )
+            : const Icon(Icons.wifi_tethering, size: 16),
+        label: Text(
+          _isTesting ? '测试中...' : '测试连接',
+          style: const TextStyle(letterSpacing: 2),
         ),
-        if (_testResult != null) ...[
-          const SizedBox(width: 12),
-          Icon(
-            _testPassed ? Icons.check_circle : Icons.error,
-            color: _testPassed ? AppColors.statusGreen : AppColors.statusRed,
-            size: 18,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              _testResult!,
-              style: TextStyle(
-                color: _testPassed ? AppColors.statusGreen : AppColors.statusRed,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ],
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.matrixGreen,
+          side: const BorderSide(color: AppColors.border),
+          disabledForegroundColor: AppColors.mutedText,
+        ),
+      ),
     );
   }
 
@@ -480,46 +482,41 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
       child: SwitchListTile(
         title: const Text(
-          'Loopback only',
+          '仅本地访问 (127.0.0.1)',
           style: TextStyle(
-            color: AppColors.matrixGreen,
-            fontSize: 14,
+            color: AppColors.textSecondary,
+            fontSize: 13,
           ),
         ),
-        subtitle: Text(
-          _loopbackOnly ? '127.0.0.1 (recomended)' : '0.0.0.0 (all interfaces)',
+        subtitle: const Text(
+          '开启后只允许本机连接（推荐）',
           style: TextStyle(
             color: AppColors.mutedText,
             fontSize: 11,
           ),
         ),
         value: _loopbackOnly,
-        onChanged: (v) => setState(() => _loopbackOnly = v),
+        onChanged: (v) {
+          if (_configSaved) {
+            setState(() => _configSaved = false);
+          }
+          setState(() => _loopbackOnly = v);
+        },
         activeColor: AppColors.matrixGreen,
+        inactiveThumbColor: AppColors.mutedText,
+        inactiveTrackColor: AppColors.surface,
       ),
     );
   }
 
   Widget _buildFooter() {
     return Center(
-      child: Column(
-        children: [
-          Text(
-            'Based on ${AppConstants.upstreamProject}',
-            style: const TextStyle(
-              color: AppColors.mutedText,
-              fontSize: 10,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${AppConstants.upstreamUrl} · MIT License',
-            style: const TextStyle(
-              color: AppColors.mutedText,
-              fontSize: 9,
-            ),
-          ),
-        ],
+      child: Text(
+        '>> OpenClaw Matrix 版 <<',
+        style: TextStyle(
+          color: AppColors.mutedText.withAlpha(60),
+          fontSize: 10,
+        ),
       ),
     );
   }
