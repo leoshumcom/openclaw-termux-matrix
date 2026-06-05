@@ -7,7 +7,7 @@ import '../models/optional_package.dart';
 import '../providers/setup_provider.dart';
 import '../services/package_service.dart';
 import '../widgets/progress_step.dart';
-import 'onboarding_screen.dart';
+import 'dashboard_screen.dart';
 import 'package_install_screen.dart';
 
 /// Setup wizard — Matrix-themed, pure progress bar, no terminal.
@@ -53,6 +53,13 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
             // Load package statuses once setup completes
             if (state.isComplete && _pkgStatuses.isEmpty) {
               _refreshPkgStatuses();
+            }
+
+            // Auto-navigate to Dashboard if coming from onboarding first run
+            if (state.isComplete && _pkgStatuses.isNotEmpty && mounted) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _goToDashboard(context);
+              });
             }
 
             return Padding(
@@ -394,7 +401,7 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed: () => _goToOnboarding(context),
+        onPressed: () => _goToDashboard(context),
         icon: const Icon(Icons.settings, size: 18),
         label: const Text(
           '>> CONFIGURE_API',
@@ -422,10 +429,10 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
     );
   }
 
-  void _goToOnboarding(BuildContext context) {
+  void _goToDashboard(BuildContext context) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => const OnboardingScreen(isFirstRun: true),
+        builder: (_) => const DashboardScreen(),
       ),
     );
   }

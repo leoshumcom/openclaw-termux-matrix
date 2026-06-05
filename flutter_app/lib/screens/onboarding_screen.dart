@@ -9,6 +9,7 @@ import '../services/provider_config_service.dart';
 import '../services/preferences_service.dart';
 import '../services/native_bridge.dart';
 import 'dashboard_screen.dart';
+import 'setup_wizard_screen.dart';
 
 /// Pure-form onboarding — no terminal, no TUI.
 /// Select AI provider, enter API key, test connection, done.
@@ -171,7 +172,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     if (widget.isFirstRun) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const SetupWizardScreen()),
       );
     } else {
       Navigator.of(context).pop();
