@@ -8,40 +8,60 @@ import '../providers/gateway_provider.dart';
 import '../screens/logs_screen.dart';
 import '../screens/web_dashboard_screen.dart';
 
+/// Matrix-themed gateway controls.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License.
 class GatewayControls extends StatelessWidget {
   const GatewayControls({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Consumer<GatewayProvider>(
       builder: (context, provider, _) {
         final state = provider.state;
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Gateway',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  const Icon(Icons.dns, color: AppColors.matrixGreen, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'GATEWAY',
+                    style: TextStyle(
+                      color: AppColors.matrixGreen,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 2,
                     ),
-                    _statusBadge(state.status, theme),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                if (state.isRunning) ...[
-                  Row(
+                  ),
+                  const Spacer(),
+                  _statusBadge(state.status),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // URL display
+              if (state.isRunning) ...[
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.matrixGreenDark.withAlpha(20),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
                     children: [
+                      const Icon(Icons.link, color: AppColors.mutedText, size: 14),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
@@ -55,125 +75,130 @@ class GatewayControls extends StatelessWidget {
                           },
                           child: Text(
                             state.dashboardUrl ?? AppConstants.gatewayUrl,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.primary,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
                               fontFamily: 'monospace',
                               decoration: TextDecoration.underline,
-                              decorationColor: theme.colorScheme.primary,
                             ),
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.copy, size: 18),
-                        tooltip: 'Copy URL',
+                        icon: const Icon(Icons.copy, color: AppColors.mutedText, size: 16),
                         onPressed: () {
                           final url = state.dashboardUrl ?? AppConstants.gatewayUrl;
                           Clipboard.setData(ClipboardData(text: url));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('URL copied to clipboard'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.open_in_new, size: 18),
-                        tooltip: 'Open dashboard',
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => WebDashboardScreen(
-                                url: state.dashboardUrl,
-                              ),
-                            ),
+                            const SnackBar(content: Text('URL copied')),
                           );
                         },
                       ),
                     ],
                   ),
-                ],
-                if (state.errorMessage != null)
-                  Text(
-                    state.errorMessage!,
-                    style: TextStyle(color: theme.colorScheme.error),
-                  ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (state.isStopped || state.status == GatewayStatus.error)
-                      FilledButton.icon(
-                        onPressed: () => provider.start(),
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('Start Gateway'),
-                      ),
-                    if (state.isRunning || state.status == GatewayStatus.starting)
-                      OutlinedButton.icon(
-                        onPressed: () => provider.stop(),
-                        icon: const Icon(Icons.stop),
-                        label: const Text('Stop Gateway'),
-                      ),
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const LogsScreen()),
-                      ),
-                      icon: const Icon(Icons.article_outlined),
-                      label: const Text('View Logs'),
-                    ),
-                  ],
                 ),
               ],
-            ),
+
+              if (state.errorMessage != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '> err: ${state.errorMessage}',
+                  style: const TextStyle(
+                    color: AppColors.statusRed,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 12),
+
+              // Action buttons
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (state.isStopped || state.status == GatewayStatus.error)
+                    FilledButton.icon(
+                      onPressed: () => provider.start(),
+                      icon: const Icon(Icons.play_arrow, size: 16),
+                      label: const Text(
+                        '>> START',
+                        style: TextStyle(letterSpacing: 1, fontSize: 12),
+                      ),
+                    ),
+                  if (state.isRunning || state.status == GatewayStatus.starting)
+                    OutlinedButton.icon(
+                      onPressed: () => provider.stop(),
+                      icon: const Icon(Icons.stop, size: 16),
+                      label: const Text(
+                        '>> STOP',
+                        style: TextStyle(letterSpacing: 1, fontSize: 12),
+                      ),
+                    ),
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const LogsScreen()),
+                    ),
+                    icon: const Icon(Icons.article_outlined, size: 16),
+                    label: const Text(
+                      '>> LOGS',
+                      style: TextStyle(letterSpacing: 1, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _statusBadge(GatewayStatus status, ThemeData theme) {
+  Widget _statusBadge(GatewayStatus status) {
     Color color;
     String label;
-    IconData icon;
+    String icon;
 
     switch (status) {
       case GatewayStatus.running:
         color = AppColors.statusGreen;
-        label = 'Running';
-        icon = Icons.check_circle_outline;
+        label = 'RUNNING';
+        icon = '●';
       case GatewayStatus.starting:
         color = AppColors.statusAmber;
-        label = 'Starting';
-        icon = Icons.hourglass_top;
+        label = 'STARTING';
+        icon = '◐';
       case GatewayStatus.error:
         color = AppColors.statusRed;
-        label = 'Error';
-        icon = Icons.error_outline;
+        label = 'ERROR';
+        icon = '●';
       case GatewayStatus.stopped:
         color = AppColors.statusGrey;
-        label = 'Stopped';
-        icon = Icons.circle_outlined;
+        label = 'STOPPED';
+        icon = '○';
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withAlpha(25),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withAlpha(20),
         border: Border.all(color: color.withAlpha(60)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 5),
+          Text(
+            icon,
+            style: TextStyle(color: color, fontSize: 12),
+          ),
+          const SizedBox(width: 4),
           Text(
             label,
-            style: theme.textTheme.labelSmall?.copyWith(
+            style: TextStyle(
               color: color,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
+              letterSpacing: 1,
             ),
           ),
         ],

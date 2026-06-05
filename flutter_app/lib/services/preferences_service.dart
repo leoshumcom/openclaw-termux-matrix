@@ -78,6 +78,31 @@ class PreferencesService {
     }
   }
 
+  /// Store an API key for a given provider.
+  Future<void> setApiKey(String providerId, String apiKey) async {
+    await _prefs.setString('api_key_$providerId', apiKey);
+  }
+
+  /// Retrieve the stored API key for a provider.
+  String? getApiKey(String providerId) {
+    return _prefs.getString('api_key_$providerId');
+  }
+
+  /// Store a string list under a given key.
+  Future<void> setStringList(String key, List<String> value) async {
+    await _prefs.setStringList(key, value);
+  }
+
+  /// Retrieve a stored string list.
+  List<String>? getStringList(String key) {
+    return _prefs.getStringList(key);
+  }
+
+  /// Convenience: persist all pending writes.
+  Future<void> save() async {
+    // SharedPreferences auto-saves; this is a no-op for compatibility.
+  }
+
   int? get nodeGatewayPort {
     final val = _prefs.getInt(_keyNodeGatewayPort);
     return val;

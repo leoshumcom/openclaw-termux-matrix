@@ -10,6 +10,10 @@ import '../widgets/progress_step.dart';
 import 'onboarding_screen.dart';
 import 'package_install_screen.dart';
 
+/// Setup wizard — Matrix-themed, pure progress bar, no terminal.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License. Modifications © 2026 66哥.
 class SetupWizardScreen extends StatefulWidget {
   const SetupWizardScreen({super.key});
 
@@ -38,9 +42,9 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: Consumer<SetupProvider>(
           builder: (context, provider, _) {
@@ -57,102 +61,19 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 32),
-                  Image.asset(
-                    'assets/ic_launcher.png',
-                    width: 64,
-                    height: 64,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Setup OpenClaw',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  // Matrix-style header
+                  _buildHeader(),
                   const SizedBox(height: 8),
-                  Text(
-                    _started
-                        ? 'Setting up the environment. This may take several minutes.'
-                        : 'This will download Ubuntu, Node.js, and OpenClaw into a self-contained environment.',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
+                  _buildSubtitle(state),
                   const SizedBox(height: 32),
-                  Expanded(
-                    child: _buildSteps(state, theme, isDark),
-                  ),
-                  if (state.hasError) ...[
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 160),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(Icons.error_outline, color: theme.colorScheme.error),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Text(
-                                  state.error ?? 'Unknown error',
-                                  style: TextStyle(color: theme.colorScheme.onErrorContainer),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                  Expanded(child: _buildSteps(state)),
+                  if (state.hasError) _buildError(state),
                   if (state.isComplete)
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: () => _goToOnboarding(context),
-                        icon: const Icon(Icons.arrow_forward),
-                        label: const Text('Configure API Keys'),
-                      ),
-                    )
+                    _buildActionButton(state)
                   else if (!_started || state.hasError)
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: provider.isRunning
-                            ? null
-                            : () {
-                                setState(() => _started = true);
-                                provider.runSetup();
-                              },
-                        icon: const Icon(Icons.download),
-                        label: Text(_started ? 'Retry Setup' : 'Begin Setup'),
-                      ),
-                    ),
-                  if (!_started) ...[
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        'Requires ~500MB of storage and an internet connection',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
+                    _buildStartButton(provider, state),
                   const SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'by ${AppConstants.authorName} | ${AppConstants.orgName}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
+                  _buildFooter(),
                 ],
               ),
             );
@@ -162,97 +83,340 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
     );
   }
 
-  Widget _buildSteps(SetupState state, ThemeData theme, bool isDark) {
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.matrixGreen.withAlpha(80)),
+            color: AppColors.matrixGreenDark.withAlpha(30),
+          ),
+          child: const Center(
+            child: Text(
+              '>>',
+              style: TextStyle(
+                color: AppColors.matrixGreen,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '> SYSTEM_INIT',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: AppColors.matrixGreen,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+              ),
+            ),
+            Text(
+              'v${AppConstants.version}',
+              style: const TextStyle(
+                color: AppColors.mutedText,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubtitle(SetupState state) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.matrixGreenDark.withAlpha(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.terminal, color: AppColors.mutedText, size: 14),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _started && !state.isComplete
+                  ? '> ${state.message}'
+                  : '> awating_init...',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSteps(SetupState state) {
     final steps = [
-      (1, 'Download Ubuntu rootfs', SetupStep.downloadingRootfs),
-      (2, 'Extract rootfs', SetupStep.extractingRootfs),
-      (3, 'Install Node.js', SetupStep.installingNode),
-      (4, 'Install OpenClaw', SetupStep.installingOpenClaw),
-      (5, 'Configure Bionic Bypass', SetupStep.configuringBypass),
+      (1, 'DOWNLOAD_ROOTFS', SetupStep.downloadingRootfs),
+      (2, 'EXTRACT_ROOTFS', SetupStep.extractingRootfs),
+      (3, 'INSTALL_NODEJS', SetupStep.installingNode),
+      (4, 'INSTALL_OPENCLAW', SetupStep.installingOpenClaw),
+      (5, 'CONFIGURE_SYSTEM', SetupStep.configuringBypass),
     ];
 
     return ListView(
       children: [
-        for (final (num, label, step) in steps)
-          ProgressStep(
-            stepNumber: num,
-            label: state.step == step ? state.message : label,
-            isActive: state.step == step,
-            isComplete: state.stepNumber > step.index || state.isComplete,
-            hasError: state.hasError && state.step == step,
-            progress: state.step == step ? state.progress : null,
-          ),
+        ...steps.map((s) => _buildStepTile(s.$1, s.$2, s.$3, state)),
         if (state.isComplete) ...[
-          const ProgressStep(
-            stepNumber: 6,
-            label: 'Setup complete!',
-            isComplete: true,
-          ),
+          const SizedBox(height: 12),
+          _buildStepTile(6, 'SETUP_COMPLETE', null, state),
           const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'OPTIONAL PACKAGES',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
+          // Optional packages section
+          _buildSectionLabel('OPTIONAL_PACKAGES'),
           const SizedBox(height: 8),
           for (final pkg in OptionalPackage.all)
-            _buildPackageTile(theme, pkg, isDark),
+            _buildPackageTile(pkg),
         ],
       ],
     );
   }
 
-  Widget _buildPackageTile(ThemeData theme, OptionalPackage package, bool isDark) {
-    final installed = _pkgStatuses[package.id] ?? false;
-    final iconBg = isDark ? AppColors.darkSurfaceAlt : const Color(0xFFF3F4F6);
+  Widget _buildStepTile(int num, String label, SetupStep? step, SetupState state) {
+    final isActive = step != null && state.step == step;
+    final isComplete = step != null && (state.stepNumber > step.index || state.isComplete);
+    final hasError = state.hasError && step != null && state.step == step;
+    final isFinal = step == null;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: iconBg,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(package.icon, color: theme.colorScheme.onSurfaceVariant, size: 22),
-        ),
-        title: Row(
-          children: [
-            Text(package.name,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (installed) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: AppColors.statusGreen.withAlpha(25),
-                  borderRadius: BorderRadius.circular(8),
+    Color indicatorColor;
+    String indicator;
+
+    if (isFinal && state.isComplete) {
+      indicatorColor = AppColors.matrixGreen;
+      indicator = '✓';
+    } else if (hasError) {
+      indicatorColor = AppColors.statusRed;
+      indicator = '!';
+    } else if (isComplete) {
+      indicatorColor = AppColors.matrixGreen;
+      indicator = '✓';
+    } else if (isActive) {
+      indicatorColor = AppColors.matrixGreen;
+      indicator = '>';
+    } else {
+      indicatorColor = AppColors.statusGrey;
+      indicator = '·';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Step indicator
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              border: Border.all(color: indicatorColor),
+              color: isActive ? AppColors.matrixGreen.withAlpha(30) : Colors.transparent,
+            ),
+            child: Center(
+              child: Text(
+                indicator,
+                style: TextStyle(
+                  color: indicatorColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Text('Installed',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: AppColors.statusGreen,
-                      fontWeight: FontWeight.w600,
-                    )),
               ),
-            ],
-          ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Step content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isActive || isComplete ? AppColors.matrixGreen : AppColors.mutedText,
+                    fontSize: 13,
+                    letterSpacing: 1,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+                if (isActive && state.progress != null) ...[
+                  const SizedBox(height: 4),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: state.progress!),
+                    duration: const Duration(milliseconds: 300),
+                    builder: (context, value, _) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: value,
+                          backgroundColor: AppColors.border,
+                          color: AppColors.matrixGreen,
+                          minHeight: 4,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(state.progress! * 100).toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                      color: AppColors.mutedText,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Text(
+        '// $label',
+        style: const TextStyle(
+          color: AppColors.mutedText,
+          fontSize: 11,
+          letterSpacing: 2,
         ),
-        subtitle: Text('${package.description} (${package.estimatedSize})'),
+      ),
+    );
+  }
+
+  Widget _buildPackageTile(OptionalPackage package) {
+    final installed = _pkgStatuses[package.id] ?? false;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ListTile(
+        dense: true,
+        leading: Icon(
+          package.icon,
+          color: installed ? AppColors.matrixGreen : AppColors.mutedText,
+          size: 20,
+        ),
+        title: Text(
+          package.name,
+          style: const TextStyle(
+            color: AppColors.matrixGreen,
+            fontSize: 13,
+          ),
+        ),
+        subtitle: Text(
+          '${package.description} (${package.estimatedSize})',
+          style: const TextStyle(
+            color: AppColors.mutedText,
+            fontSize: 11,
+          ),
+        ),
         trailing: installed
-            ? const Icon(Icons.check_circle, color: AppColors.statusGreen)
-            : OutlinedButton(
-                onPressed: () => _installPackage(package),
-                child: const Text('Install'),
+            ? const Icon(Icons.check_circle, color: AppColors.matrixGreen, size: 20)
+            : SizedBox(
+                height: 28,
+                child: OutlinedButton(
+                  onPressed: () => _installPackage(package),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    textStyle: const TextStyle(fontSize: 11),
+                  ),
+                  child: const Text('INSTALL'),
+                ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildError(SetupState state) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.statusRed.withAlpha(20),
+        border: Border.all(color: AppColors.statusRed.withAlpha(80)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline, color: AppColors.statusRed, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              state.error ?? 'ERR_UNKNOWN',
+              style: const TextStyle(color: AppColors.statusRed, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStartButton(SetupProvider provider, SetupState state) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: provider.isRunning
+            ? null
+            : () {
+                setState(() => _started = true);
+                provider.runSetup();
+              },
+        icon: Icon(
+          state.hasError ? Icons.refresh : Icons.download,
+          size: 18,
+        ),
+        label: Text(
+          state.hasError ? '>> RETRY_SETUP' : '>> BEGIN_SETUP',
+          style: const TextStyle(letterSpacing: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(SetupState state) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: () => _goToOnboarding(context),
+        icon: const Icon(Icons.settings, size: 18),
+        label: const Text(
+          '>> CONFIGURE_API',
+          style: TextStyle(letterSpacing: 2),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            'Based on ${AppConstants.upstreamProject}',
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 10),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            AppConstants.upstreamUrl,
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 9),
+          ),
+        ],
       ),
     );
   }

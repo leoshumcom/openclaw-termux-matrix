@@ -3,12 +3,17 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../app.dart';
 import '../constants.dart';
 import '../services/native_bridge.dart';
 import '../services/preferences_service.dart';
 import 'setup_wizard_screen.dart';
 import 'dashboard_screen.dart';
 
+/// Splash screen — Matrix hacker-style.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License. Modifications © 2026 66哥.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,7 +23,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  String _status = 'Loading...';
+  String _status = '> loading...';
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
 
@@ -27,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
@@ -44,17 +49,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAndRoute() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 800));
 
     try {
-      setState(() => _status = 'Checking setup status...');
+      setState(() => _status = '> check_system...');
 
-      // Ensure directories and resolv.conf exist on every app open.
-      // Android may clear the files directory during update or reinstall (#40).
       try { await NativeBridge.setupDirs(); } catch (_) {}
       try { await NativeBridge.writeResolv(); } catch (_) {}
 
-      // Direct Dart fallback: create resolv.conf if native calls failed (#40).
       try {
         final filesDir = await NativeBridge.getFilesDir();
         const resolvContent = 'nameserver 8.8.8.8\nnameserver 8.8.4.4\n';
@@ -64,7 +66,6 @@ class _SplashScreenState extends State<SplashScreen>
           Directory(configDir).createSync(recursive: true);
           resolvFile.writeAsStringSync(resolvContent);
         }
-        // Also write into rootfs /etc/ so DNS works even if bind-mount fails
         final rootfsResolv = File('$filesDir/rootfs/ubuntu/etc/resolv.conf');
         if (!rootfsResolv.existsSync()) {
           rootfsResolv.parent.createSync(recursive: true);
@@ -75,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
       final prefs = PreferencesService();
       await prefs.init();
 
-      // Auto-export snapshot when app version changes (#55)
+      // Auto-export snapshot when app version changes
       try {
         final oldVersion = prefs.lastAppVersion;
         if (oldVersion != null && oldVersion != AppConstants.version) {
@@ -115,8 +116,6 @@ class _SplashScreenState extends State<SplashScreen>
         setupComplete = false;
       }
 
-      // Auto-repair: if the rootfs and bash exist but other components are
-      // missing, try to repair them instead of forcing full re-setup (#70, #73, #97).
       if (!setupComplete) {
         try {
           final status = await NativeBridge.getBootstrapStatus();
@@ -126,17 +125,13 @@ class _SplashScreenState extends State<SplashScreen>
           final openclawOk = status['openclawInstalled'] == true;
           final bypassOk = status['bypassInstalled'] == true;
 
-          // Core rootfs must exist — can't repair without it
           if (rootfsOk && bashOk) {
-            // Regenerate bionic bypass if missing
             if (!bypassOk) {
-              setState(() => _status = 'Repairing bionic bypass...');
+              setState(() => _status = '> repair_bypass...');
               await NativeBridge.installBionicBypass();
             }
-
-            // Reinstall node if binary is missing (#97)
             if (!nodeOk) {
-              setState(() => _status = 'Reinstalling Node.js...');
+              setState(() => _status = '> reinstall_node...');
               try {
                 final arch = await NativeBridge.getArch();
                 final nodeTarUrl = AppConstants.getNodeTarballUrl(arch);
@@ -147,10 +142,8 @@ class _SplashScreenState extends State<SplashScreen>
                 await NativeBridge.extractNodeTarball(nodeTarPath);
               } catch (_) {}
             }
-
-            // Reinstall openclaw if package.json is missing (#97)
             if (!openclawOk && nodeOk) {
-              setState(() => _status = 'Reinstalling OpenClaw...');
+              setState(() => _status = '> reinstall_openclaw...');
               try {
                 const wrapper = '/root/.openclaw/node-wrapper.js';
                 const nodeRun = 'node $wrapper';
@@ -162,7 +155,6 @@ class _SplashScreenState extends State<SplashScreen>
                 await NativeBridge.createBinWrappers('openclaw');
               } catch (_) {}
             }
-
             setupComplete = await NativeBridge.isBootstrapComplete();
           }
         } catch (_) {}
@@ -182,7 +174,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _status = 'Error: $e');
+        setState(() => _status = '> err: $e');
       }
     }
   }
@@ -190,47 +182,78 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bg,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/ic_launcher.png',
+              // Matrix-style boot logo
+              Container(
                 width: 80,
                 height: 80,
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.matrixGreen, width: 1),
+                  color: AppColors.matrixGreenDark.withAlpha(40),
+                ),
+                child: Center(
+                  child: Text(
+                    '[]',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 32,
+                      color: AppColors.matrixGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               Text(
-                'OpenClaw',
-                style: GoogleFonts.inter(
-                  fontSize: 28,
+                '_OPENCLAW_MATRIX_',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  letterSpacing: 4,
+                  color: AppColors.matrixGreen,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'AI Gateway for Android',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                'v${AppConstants.version}',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12,
+                  color: AppColors.mutedText,
+                  letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                'by ${AppConstants.authorName} | ${AppConstants.orgName}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                'based on ${AppConstants.upstreamProject}',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 10,
+                  color: AppColors.mutedText.withAlpha(100),
                 ),
               ),
               const SizedBox(height: 32),
-              const CircularProgressIndicator(),
+              SizedBox(
+                width: 200,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: const LinearProgressIndicator(
+                    backgroundColor: AppColors.border,
+                    color: AppColors.matrixGreen,
+                    minHeight: 2,
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Text(
                 _status,
-                style: Theme.of(context).textTheme.bodySmall,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),

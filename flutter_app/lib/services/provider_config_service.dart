@@ -6,6 +6,54 @@ import 'native_bridge.dart';
 class ProviderConfigService {
   static const _configPath = '/root/.openclaw/openclaw.json';
 
+  /// Test a connection to an AI provider by making a lightweight API call.
+  /// Returns true if the provider responds successfully.
+  static Future<bool> testConnection({
+    required String providerId,
+    required String apiKey,
+    required String model,
+  }) async {
+    try {
+      // A minimal curl inside proot to test the API key
+      final result = await NativeBridge.runInProot(
+        'curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10'
+        ' -H "Authorization: Bearer ${_shellEscape(apiKey)}"'
+        ' -H "Content-Type: application/json"'
+        ' -d \'{"model":"${_shellEscape(model)}","messages":[{"role":"user","content":"ping"}]}\''
+        ' ${_getTestUrl(providerId)}',
+        timeout: 20,
+      );
+      final code = int.tryParse((result ?? '').trim());
+      // 200, 201, or 202 = success. 401/403 = bad key. 400 might mean body format mismatch.
+      if (code != null) {
+        return code >= 200 && code < 300;
+      }
+      // If curl fails (e.g. no network), try a lighter approach
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Get the test endpoint URL for a given provider.
+  static String _getTestUrl(String providerId) {
+    switch (providerId) {
+      case 'openai':
+      case 'deepseek':
+        return 'https://api.deepseek.com/v1/chat/completions';
+      case 'anthropic':
+        return 'https://api.anthropic.com/v1/messages';
+      case 'google':
+        return 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+      case 'openrouter':
+        return 'https://openrouter.ai/api/v1/chat/completions';
+      case 'xai':
+        return 'https://api.x.ai/v1/chat/completions';
+      default:
+        return 'https://api.deepseek.com/v1/chat/completions';
+    }
+  }
+
   /// Escape a string for use as a single-quoted shell argument.
   static String _shellEscape(String s) {
     return "'${s.replaceAll("'", "'\\''")}'";

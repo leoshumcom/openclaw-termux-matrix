@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../app.dart';
 import '../constants.dart';
 import '../providers/gateway_provider.dart';
 import '../providers/node_provider.dart';
 import '../widgets/gateway_controls.dart';
-import '../widgets/status_card.dart';
 import 'node_screen.dart';
 import 'configure_screen.dart';
 import 'onboarding_screen.dart';
@@ -17,19 +17,22 @@ import 'providers_screen.dart';
 import 'settings_screen.dart';
 import 'ssh_screen.dart';
 
+/// Matrix-themed dashboard.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License. Modifications © 2026 66哥.
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        title: const Text('OpenClaw'),
+        title: const Text('>> DASHBOARD'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings, color: AppColors.mutedText),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
             ),
@@ -41,175 +44,280 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Gateway status controls
             const GatewayControls(),
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(
-                'QUICK ACTIONS',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+
+            // Quick actions
+            _buildSectionLabel('QUICK_ACTIONS'),
+            const SizedBox(height: 8),
+
+            _buildQuickActions(context),
+
+            const SizedBox(height: 24),
+            _buildFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 4),
+      child: Text(
+        '// $label',
+        style: const TextStyle(
+          color: AppColors.mutedText,
+          fontSize: 11,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    return Column(
+      children: [
+        // Row 1: Terminal + Web Dashboard
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.terminal,
+                label: 'TERMINAL',
+                subtitle: 'Ubuntu shell',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const TerminalScreen()),
                 ),
               ),
             ),
-            StatusCard(
-              title: 'Terminal',
-              subtitle: 'Open Ubuntu shell with OpenClaw',
-              icon: Icons.terminal,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const TerminalScreen()),
-              ),
-            ),
-            Consumer<GatewayProvider>(
-              builder: (context, provider, _) {
-                final url = provider.state.dashboardUrl;
-                final token = url != null
-                    ? RegExp(r'#token=([0-9a-f]+)').firstMatch(url)?.group(1)
-                    : null;
-                final subtitle = provider.state.isRunning
-                    ? (token != null
-                        ? 'Token: ${token.substring(0, (token.length > 8 ? 8 : token.length))}...'
-                        : 'Open OpenClaw dashboard in browser')
-                    : 'Start gateway first';
-                return StatusCard(
-                  title: 'Web Dashboard',
-                  subtitle: subtitle,
-                  icon: Icons.dashboard,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (token != null)
-                        IconButton(
-                          icon: const Icon(Icons.copy, size: 18),
-                          tooltip: 'Copy dashboard URL',
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: url!));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Dashboard URL copied')),
-                            );
-                          },
-                        ),
-                      const Icon(Icons.chevron_right),
-                    ],
-                  ),
-                  onTap: provider.state.isRunning
-                      ? () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => WebDashboardScreen(
-                                url: url,
-                              ),
-                            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Consumer<GatewayProvider>(
+                builder: (context, provider, _) {
+                  final url = provider.state.dashboardUrl;
+                  final token = url != null
+                      ? RegExp(r'#token=([0-9a-f]+)').firstMatch(url)?.group(1)
+                      : null;
+                  return _buildActionCard(
+                    icon: Icons.dashboard,
+                    label: 'DASHBOARD',
+                    subtitle: provider.state.isRunning
+                        ? (token != null
+                            ? 'Token: ${token.substring(0, token.length > 8 ? 8 : token.length)}...'
+                            : 'Web UI')
+                        : 'Start gateway',
+                    trailing: token != null
+                        ? IconButton(
+                            icon: const Icon(Icons.copy, color: AppColors.mutedText, size: 16),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: url!));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('URL copied')),
+                              );
+                            },
                           )
-                      : null,
-                );
-              },
-            ),
-            StatusCard(
-              title: 'Onboarding',
-              subtitle: 'Configure API keys and binding',
-              icon: Icons.vpn_key,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                        : null,
+                    onTap: provider.state.isRunning
+                        ? () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => WebDashboardScreen(url: url),
+                              ),
+                            )
+                        : null,
+                  );
+                },
               ),
             ),
-            StatusCard(
-              title: 'Configure',
-              subtitle: 'Manage gateway settings',
-              icon: Icons.tune,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ConfigureScreen()),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Row 2: API Keys + AI Providers
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.vpn_key,
+                label: 'API_KEYS',
+                subtitle: 'Configure providers',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+                ),
               ),
             ),
-            StatusCard(
-              title: 'AI Providers',
-              subtitle: 'Configure models and API keys',
-              icon: Icons.model_training,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProvidersScreen()),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.model_training,
+                label: 'PROVIDERS',
+                subtitle: 'Models & settings',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProvidersScreen()),
+                ),
               ),
             ),
-            StatusCard(
-              title: 'Packages',
-              subtitle: 'Install optional tools (Go, Homebrew, SSH)',
-              icon: Icons.extension,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PackagesScreen()),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Row 3: Configure + SSH
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.tune,
+                label: 'CONFIGURE',
+                subtitle: 'Gateway settings',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ConfigureScreen()),
+                ),
               ),
             ),
-            StatusCard(
-              title: 'SSH Access',
-              subtitle: 'Remote terminal access via SSH',
-              icon: Icons.terminal,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SshScreen()),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.terminal,
+                label: 'SSH',
+                subtitle: 'Remote access',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SshScreen()),
+                ),
               ),
             ),
-            StatusCard(
-              title: 'Logs',
-              subtitle: 'View gateway output and errors',
-              icon: Icons.article_outlined,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LogsScreen()),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Row 4: Logs + Packages
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.article_outlined,
+                label: 'LOGS',
+                subtitle: 'Gateway output',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LogsScreen()),
+                ),
               ),
             ),
-            StatusCard(
-              title: 'Snapshot',
-              subtitle: 'Backup or restore your config',
-              icon: Icons.backup,
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.extension,
+                label: 'PACKAGES',
+                subtitle: 'Go, Homebrew, SSH',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PackagesScreen()),
+                ),
               ),
             ),
-            Consumer<NodeProvider>(
-              builder: (context, nodeProvider, _) {
-                final nodeState = nodeProvider.state;
-                return StatusCard(
-                  title: 'Node',
-                  subtitle: nodeState.isPaired
-                      ? 'Connected to gateway'
-                      : nodeState.isDisabled
-                          ? 'Device capabilities for AI'
-                          : nodeState.statusText,
-                  icon: Icons.devices,
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const NodeScreen()),
-                  ),
-                );
-              },
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Row 5: Node + Settings
+        Row(
+          children: [
+            Expanded(
+              child: Consumer<NodeProvider>(
+                builder: (context, nodeProvider, _) {
+                  final ns = nodeProvider.state;
+                  return _buildActionCard(
+                    icon: Icons.devices,
+                    label: 'NODE',
+                    subtitle: ns.isPaired ? 'Connected' : ns.statusText,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const NodeScreen()),
+                    ),
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 24),
-            Center(
+            const SizedBox(width: 8),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.backup,
+                label: 'SNAPSHOT',
+                subtitle: 'Backup & restore',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.matrixGreen, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'OpenClaw v${AppConstants.version}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    label,
+                    style: const TextStyle(
+                      color: AppColors.matrixGreen,
+                      fontSize: 12,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 2),
                   Text(
-                    'by ${AppConstants.authorName} | ${AppConstants.orgName}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    subtitle,
+                    style: const TextStyle(
+                      color: AppColors.mutedText,
+                      fontSize: 10,
                     ),
                   ),
                 ],
               ),
             ),
+            if (trailing != null) trailing,
+            if (trailing == null && onTap != null)
+              const Icon(Icons.chevron_right, color: AppColors.mutedText, size: 16),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Center(
+      child: Column(
+        children: [
+          Text(
+            'OpenClaw Matrix v${AppConstants.version}',
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 10),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Based on ${AppConstants.upstreamProject} — MIT',
+            style: const TextStyle(color: AppColors.mutedText, fontSize: 9),
+          ),
+        ],
       ),
     );
   }

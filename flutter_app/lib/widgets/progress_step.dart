@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../app.dart';
 
+/// Matrix-themed progress step.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License.
 class ProgressStep extends StatelessWidget {
   final int stepNumber;
   final String label;
@@ -21,56 +25,43 @@ class ProgressStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    Color circleColor;
-    Widget circleChild;
+    Color indicatorColor;
+    String indicator;
 
     if (hasError) {
-      circleColor = theme.colorScheme.error;
-      circleChild = const Icon(Icons.close, color: Colors.white, size: 16);
+      indicatorColor = AppColors.statusRed;
+      indicator = '!';
     } else if (isComplete) {
-      circleColor = AppColors.statusGreen;
-      circleChild = const Icon(Icons.check, color: Colors.white, size: 16);
+      indicatorColor = AppColors.matrixGreen;
+      indicator = '✓';
     } else if (isActive) {
-      circleColor = theme.colorScheme.primary;
-      // Use indeterminate (spinning) when progress is 0 so the UI doesn't
-      // appear frozen during long-running steps (#83).
-      final effectiveProgress = (progress != null && progress! > 0.0) ? progress : null;
-      circleChild = SizedBox(
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.white,
-          value: effectiveProgress,
-        ),
-      );
+      indicatorColor = AppColors.matrixGreen;
+      indicator = '>';
     } else {
-      circleColor = theme.colorScheme.surfaceContainerHighest;
-      circleChild = Text(
-        '$stepNumber',
-        style: TextStyle(
-          color: theme.colorScheme.onSurfaceVariant,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      );
+      indicatorColor = AppColors.statusGrey;
+      indicator = '$stepNumber';
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
-              color: circleColor,
-              shape: BoxShape.circle,
+              border: Border.all(color: indicatorColor),
             ),
             alignment: Alignment.center,
-            child: circleChild,
+            child: Text(
+              indicator,
+              style: TextStyle(
+                color: indicatorColor,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -79,21 +70,24 @@ class ProgressStep extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: theme.textTheme.bodyMedium?.copyWith(
+                  style: TextStyle(
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                    color: isActive
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSurfaceVariant,
+                    color: isActive || isComplete
+                        ? AppColors.matrixGreen
+                        : AppColors.mutedText,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
                   ),
                 ),
                 if (isActive && progress != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
-                      // Show indeterminate animation when progress is 0 (#83)
                       value: progress! > 0.0 ? progress : null,
+                      backgroundColor: AppColors.border,
+                      color: AppColors.matrixGreen,
                       minHeight: 4,
-                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   if (progress! > 0.0)
@@ -101,8 +95,9 @@ class ProgressStep extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         '${(progress! * 100).toInt()}%',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+                        style: const TextStyle(
+                          color: AppColors.mutedText,
+                          fontSize: 10,
                         ),
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app.dart';
 
 class StatusCard extends StatelessWidget {
   final String title;
@@ -20,49 +21,58 @@ class StatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final iconBg = isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF3F4F6);
-    final iconColor = theme.colorScheme.onSurfaceVariant;
-
-    return Card(
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border.all(color: AppColors.border),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: iconBg,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.matrixGreenDark.withAlpha(30),
+                  border: Border.all(color: AppColors.border),
                 ),
-                child: Icon(icon, color: iconColor, size: 28),
+                child: Icon(
+                  icon,
+                  color: AppColors.matrixGreen,
+                  size: 22,
+                ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: const TextStyle(
+                        color: AppColors.matrixGreen,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style: const TextStyle(
+                        color: AppColors.mutedText,
+                        fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
               if (trailing != null) trailing!,
+              if (trailing == null)
+                const Icon(Icons.chevron_right, color: AppColors.mutedText, size: 16),
             ],
           ),
         ),

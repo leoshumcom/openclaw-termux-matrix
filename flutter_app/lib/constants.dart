@@ -1,41 +1,46 @@
+/// Application constants — modified for Matrix Edition.
+///
+/// Based on openclaw-termux (https://github.com/mithun50/openclaw-termux)
+/// — MIT License. Modifications © 2026 66哥.
 class AppConstants {
-  static const String appName = 'OpenClaw';
-  static const String version = '1.8.7';
-  static const String packageName = 'com.nxg.openclawproot';
+  static const String appName = 'OpenClaw Matrix';
+  static const String version = '1.0.0';
+  static const String packageName = 'com.openclaw.matrix';
 
-  /// Matches ANSI escape sequences (e.g. color codes in terminal output).
+  /// Matches ANSI escape sequences.
   static final ansiEscape = RegExp(r'\x1b\[[0-9;]*[a-zA-Z]');
 
-  static const String authorName = 'Mithun Gowda B';
-  static const String authorEmail = 'mithungowda.b7411@gmail.com';
-  static const String githubUrl = 'https://github.com/mithun50/openclaw-termux';
+  // --- Upstream attribution ---
+  static const String upstreamProject = 'openclaw-termux';
+  static const String upstreamUrl =
+      'https://github.com/mithun50/openclaw-termux';
+  static const String upstreamLicense = 'MIT';
+
+  // --- Author info ---
+  static const String authorName = '66哥';
+  static const String authorEmail = '';
+  static const String githubUrl = 'https://github.com/leoshumcom/openclaw-termux-matrix';
   static const String license = 'MIT';
 
   static const String githubApiLatestRelease =
-      'https://api.github.com/repos/mithun50/openclaw-termux/releases/latest';
+      'https://api.github.com/repos/leoshumcom/openclaw-termux-matrix/releases/latest';
 
-  // NextGenX
-  static const String orgName = 'NextGenX';
-  static const String orgEmail = 'nxgextra@gmail.com';
-  static const String instagramUrl = 'https://www.instagram.com/nexgenxplorer_nxg';
-  static const String youtubeUrl = 'https://youtube.com/@nexgenxplorer?si=UG-wBC8UIyeT4bbw';
-  static const String playStoreUrl = 'https://play.google.com/store/apps/dev?id=8262374975871504599';
-
+  // --- Gateway ---
   static const String gatewayHost = '127.0.0.1';
   static const int gatewayPort = 18789;
   static const String gatewayUrl = 'http://$gatewayHost:$gatewayPort';
 
+  // --- Ubuntu rootfs (mirror.tuna.tsinghua.edu.cn for CN users) ---
   static const String ubuntuRootfsUrl =
-      'https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.3-base-';
+      'https://mirrors.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.3-base-';
   static const String rootfsArm64 = '${ubuntuRootfsUrl}arm64.tar.gz';
   static const String rootfsArmhf = '${ubuntuRootfsUrl}armhf.tar.gz';
   static const String rootfsAmd64 = '${ubuntuRootfsUrl}amd64.tar.gz';
 
-  // Node.js binary tarball — downloaded directly by Flutter, extracted by Java.
-  // Bypasses curl/gpg/NodeSource which fail inside proot.
+  // --- Node.js binary tarball (npmmirror.com for CN users) ---
   static const String nodeVersion = '22.14.0';
   static const String nodeBaseUrl =
-      'https://nodejs.org/dist/v$nodeVersion/node-v$nodeVersion-linux-';
+      'https://npmmirror.com/mirrors/node/v$nodeVersion/node-v$nodeVersion-linux-';
 
   static String getNodeTarballUrl(String arch) {
     switch (arch) {
@@ -53,15 +58,15 @@ class AppConstants {
   static const int healthCheckIntervalMs = 5000;
   static const int maxAutoRestarts = 5;
 
-  // Node constants
+  // --- Node constants ---
   static const int wsReconnectBaseMs = 350;
   static const double wsReconnectMultiplier = 1.7;
   static const int wsReconnectCapMs = 8000;
   static const String nodeRole = 'node';
   static const int pairingTimeoutMs = 300000;
 
-  static const String channelName = 'com.nxg.openclawproot/native';
-  static const String eventChannelName = 'com.nxg.openclawproot/gateway_logs';
+  static const String channelName = 'com.openclaw.matrix/native';
+  static const String eventChannelName = 'com.openclaw.matrix/gateway_logs';
 
   static String getRootfsUrl(String arch) {
     switch (arch) {
