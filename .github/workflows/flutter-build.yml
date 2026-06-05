@@ -175,6 +175,23 @@ jobs:
           path: artifacts/*.aab
           retention-days: 30
 
+      - name: Upload to Cloudflare R2
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        env:
+          CLOUDFLARE_R2_TOKEN: ${{ secrets.CLOUDFLARE_R2_TOKEN }}
+        run: |
+          VERSION=$(grep '^version:' flutter_app/pubspec.yaml | awk '{print $2}' | cut -d'+' -f1)
+          echo "Uploading APKs to Cloudflare R2..."
+          for f in artifacts/*.apk; do
+            BASENAME=$(basename "$f")
+            echo "Uploading $BASENAME..."
+            curl -s -X PUT \
+              -H "Authorization: Bearer $CLOUDFLARE_R2_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary @"$f" \
+              "https://api.cloudflare.com/client/v4/accounts/aa42436ad09a92ec856aa353ae06b31e/r2/buckets/openclaw-apk/objects/${BASENAME}" | jq .
+          done
+
       - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
