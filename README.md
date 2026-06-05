@@ -1,14 +1,14 @@
-# OpenClaw Matrix 🟢
+# OpenClaw APK手机版一键部署
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> **Matrix Edition** �?A fork of [openclaw-termux](https://github.com/mithun50/openclaw-termux) with Matrix/hacker-themed UI, Chinese mirror sources, and a pure-form configuration experience.
+> **Matrix Edition** â€?A fork of [openclaw-termux](https://github.com/mithun50/openclaw-termux) with Matrix/hacker-themed UI, Chinese mirror sources, and a pure-form configuration experience.
 
-Run **OpenClaw AI Gateway** on Android �?standalone Flutter app with one-tap setup, AI provider configuration, and web dashboard, all wrapped in a green-on-black Matrix terminal aesthetic.
+Run **OpenClaw AI Gateway** on Android â€?standalone Flutter app with one-tap setup, AI provider configuration, and web dashboard, all wrapped in a green-on-black Matrix terminal aesthetic.
 
 ---
 
-## 🔌 Based On
+## ðŸ”Œ Based On
 
 This project is a modified fork of **[mithun50/openclaw-termux](https://github.com/mithun50/openclaw-termux)** (MIT License).
 
@@ -16,7 +16,7 @@ This project is a modified fork of **[mithun50/openclaw-termux](https://github.c
 
 | Feature | Original | Matrix Edition |
 |---|---|---|
-| UI Theme | Material 3 (light/dark) | **Matrix hacker green** 💚 |
+| UI Theme | Material 3 (light/dark) | **Matrix hacker green** ðŸ’š |
 | Onboarding | Terminal emulator | **Pure form UI** |
 | Download Sources | Official (slow in CN) | **Tsinghua + npmmirror mirrors** |
 | API Key Config | `openclaw onboard` TUI | **Dropdown + text field** |
@@ -25,25 +25,25 @@ This project is a modified fork of **[mithun50/openclaw-termux](https://github.c
 
 ---
 
-## �?Features
+## âœ?Features
 
-- **One-Tap Setup** �?Downloads Ubuntu rootfs, Node.js 22, and OpenClaw automatically
-- **Form-Based Onboarding** �?Select AI provider, enter API key, done. No terminal needed
-- **Matrix UI** �?Green-on-black terminal aesthetic throughout
-- **Gateway Controls** �?Start/stop gateway with status indicator
-- **AI Providers** �?Configure 7 providers (Anthropic, OpenAI, Google Gemini, OpenRouter, NVIDIA NIM, DeepSeek, xAI)
-- **Web Dashboard** �?Embedded WebView with auth token
-- **Node Device Capabilities** �?Camera, flash, location, sensors, screen recording
-- **Foreground Service** �?Keeps the gateway alive in background
-- **Built-in Terminal** �?Full terminal emulator if you need it
+- **One-Tap Setup** â€?Downloads Ubuntu rootfs, Node.js 22, and OpenClaw automatically
+- **Form-Based Onboarding** â€?Select AI provider, enter API key, done. No terminal needed
+- **Matrix UI** â€?Green-on-black terminal aesthetic throughout
+- **Gateway Controls** â€?Start/stop gateway with status indicator
+- **AI Providers** â€?Configure 7 providers (Anthropic, OpenAI, Google Gemini, OpenRouter, NVIDIA NIM, DeepSeek, xAI)
+- **Web Dashboard** â€?Embedded WebView with auth token
+- **Node Device Capabilities** â€?Camera, flash, location, sensors, screen recording
+- **Foreground Service** â€?Keeps the gateway alive in background
+- **Built-in Terminal** â€?Full terminal emulator if you need it
 
 ---
 
-## 🚀 Quick Start
+## ðŸš€ Quick Start
 
 1. Download the latest APK from [Releases](https://github.com/leoshumcom/openclaw-termux-matrix/releases)
 2. Install on your Android device (Android 10+)
-3. Tap **Begin Setup** �?wait for Ubuntu + Node.js + OpenClaw to install
+3. Tap **Begin Setup** â€?wait for Ubuntu + Node.js + OpenClaw to install
 4. Select your **AI provider**, enter **API key**, tap **Save**
 5. Start the Gateway and connect via Feishu/Web
 
@@ -57,13 +57,13 @@ flutter build apk --release --target-platform android-arm64
 
 ---
 
-## 🖥�?Screenshots
+## ðŸ–¥ï¸?Screenshots
 
 *(Add your Matrix-themed screenshots here)*
 
 ---
 
-## 📦 Tech Stack
+## ðŸ“¦ Tech Stack
 
 - **Frontend**: Flutter 3.24+ (Dart)
 - **Runtime**: Node.js 22 + proot-distro (Ubuntu 24.04)
@@ -72,13 +72,13 @@ flutter build apk --release --target-platform android-arm64
 
 ---
 
-## 🙏 Credits
+## ðŸ™ Credits
 
-- [mithun50/openclaw-termux](https://github.com/mithun50/openclaw-termux) �?original project (MIT)
-- [OpenClaw](https://github.com/openclaw/openclaw) �?AI Gateway
-- The Matrix movies 🎬
+- [mithun50/openclaw-termux](https://github.com/mithun50/openclaw-termux) â€?original project (MIT)
+- [OpenClaw](https://github.com/openclaw/openclaw) â€?AI Gateway
+- The Matrix movies ðŸŽ¬
 
-## 📄 License
+## ðŸ“„ License
 
-MIT �?based on [openclaw-termux](https://github.com/mithun50/openclaw-termux) (MIT).
+MIT â€?based on [openclaw-termux](https://github.com/mithun50/openclaw-termux) (MIT).
 
