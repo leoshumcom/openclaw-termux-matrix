@@ -26,7 +26,6 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _configService = ProviderConfigService();
   final _prefs = PreferencesService();
 
   // Available AI providers
@@ -80,7 +79,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
 
     try {
-      final result = await _configService.testConnection(
+      final result = await ProviderConfigService.testConnection(
         providerId: _selectedProvider.id,
         apiKey: _apiKeyController.text.trim(),
         model: _selectedModel ?? _selectedProvider.defaultModels.first,
@@ -138,7 +137,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       );
 
       // Also save the config via provider_config_service
-      await _configService.saveProviderConfig(
+      await ProviderConfigService.saveProviderConfig(
         provider: _selectedProvider,
         apiKey: apiKey,
         model: _selectedModel ?? _selectedProvider.defaultModels.first,
@@ -164,8 +163,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
-    await _prefs.setupComplete = true;
-    await _prefs.isFirstRun = false;
+    _prefs.setupComplete = true;
+    _prefs.isFirstRun = false;
     await _prefs.save();
 
     if (!mounted) return;

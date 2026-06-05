@@ -278,11 +278,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 ListTile(
                   title: const Text('Contact'),
-                  subtitle: const Text(AppConstants.authorEmail),
+                  subtitle: const Text('leoshum.com@gmail.com'),
                   leading: const Icon(Icons.email),
                   trailing: const Icon(Icons.open_in_new, size: 18),
                   onTap: () => launchUrl(
-                    Uri.parse('mailto:${AppConstants.authorEmail}'),
+                    Uri.parse('mailto:leoshum.com@gmail.com'),
                   ),
                 ),
                 const ListTile(
@@ -291,45 +291,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: Icon(Icons.description),
                 ),
                 const Divider(),
-                _sectionHeader(theme, AppConstants.orgName.toUpperCase()),
-                ListTile(
-                  title: const Text('Instagram'),
-                  subtitle: const Text('@nexgenxplorer_nxg'),
-                  leading: const Icon(Icons.camera_alt),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => launchUrl(
-                    Uri.parse(AppConstants.instagramUrl),
-                    mode: LaunchMode.externalApplication,
+                Text(
+                  ' > ABOUT',
+                  style: TextStyle(
+                    color: AppColors.matrixGreen,
+                    fontSize: 12,
+                    letterSpacing: 2,
                   ),
                 ),
+                const SizedBox(height: 8),
                 ListTile(
-                  title: const Text('YouTube'),
-                  subtitle: const Text('@nexgenxplorer'),
-                  leading: const Icon(Icons.play_circle_fill),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => launchUrl(
-                    Uri.parse(AppConstants.youtubeUrl),
-                    mode: LaunchMode.externalApplication,
-                  ),
+                  title: const Text('Source'),
+                  subtitle: const Text('github.com/mithun50/openclaw-termux (MIT)'),
+                  leading: const Icon(Icons.code),
                 ),
                 ListTile(
-                  title: const Text('Play Store'),
-                  subtitle: const Text('NextGenX Apps'),
-                  leading: const Icon(Icons.shop),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => launchUrl(
-                    Uri.parse(AppConstants.playStoreUrl),
-                    mode: LaunchMode.externalApplication,
-                  ),
-                ),
-                ListTile(
-                  title: const Text('Email'),
-                  subtitle: const Text(AppConstants.orgEmail),
-                  leading: const Icon(Icons.email_outlined),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => launchUrl(
-                    Uri.parse('mailto:${AppConstants.orgEmail}'),
-                  ),
+                  title: const Text('Matrix Edition'),
+                  subtitle: const Text('© 2026 66哥'),
+                  leading: const Icon(Icons.info_outline),
                 ),
               ],
             ),

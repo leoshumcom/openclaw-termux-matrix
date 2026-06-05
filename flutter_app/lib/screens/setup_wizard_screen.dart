@@ -110,8 +110,9 @@ class _SetupWizardScreenState extends State<SetupWizardScreen> {
           children: [
             Text(
               '> SYSTEM_INIT',
-              style: theme.textTheme.headlineSmall?.copyWith(
+              style: TextStyle(
                 color: AppColors.matrixGreen,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 3,
               ),
