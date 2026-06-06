@@ -11,6 +11,10 @@ allprojects {
 
 rootProject.buildDir = "../build"
 
+// Force NDK 26 to avoid NDK 27 cstddef issue
+gradle.ext.ndkVersion = "26.3.11579264"
+gradle.ext.flutterNdkVersion = "26.3.11579264"
+
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     // Provide flutter compilation defaults for plugins whose build.gradle
@@ -19,7 +23,8 @@ subprojects {
         project.ext.set("flutter", [
             compileSdkVersion: 35,
             minSdkVersion: 29,
-            targetSdkVersion: 36
+            targetSdkVersion: 36,
+            ndkVersion: "26.3.11579264"
         ])
     }
 }

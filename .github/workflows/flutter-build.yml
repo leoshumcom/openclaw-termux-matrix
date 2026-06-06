@@ -44,6 +44,21 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Install NDK 26
+        run: |
+          ANDROID_SDK="$ANDROID_HOME"
+          NDK_VERSION="26.3.11579264"
+          NDK_DIR="$ANDROID_SDK/ndk/$NDK_VERSION"
+          if [ ! -d "$NDK_DIR" ]; then
+            echo "Installing NDK $NDK_VERSION..."
+            $ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager --install "ndk;$NDK_VERSION" 2>&1 || \
+            $ANDROID_SDK/tools/bin/sdkmanager --install "ndk;$NDK_VERSION" 2>&1 || \
+            echo "Trying via gradle..."
+          fi
+          echo "ANDROID_NDK_HOME=$NDK_DIR" >> "$GITHUB_ENV"
+          echo "NDK installed at:"
+          ls -d $ANDROID_SDK/ndk/*/
+
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
