@@ -1,7 +1,7 @@
 name: openclaw_matrix
 description: OpenClaw AI Gateway for Android - Matrix Edition. Based on openclaw-termux (https://github.com/mithun50/openclaw-termux).
 publish_to: 'none'
-version: 1.0.2+1
+version: 1.0.3+1
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
