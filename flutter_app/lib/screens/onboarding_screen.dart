@@ -302,7 +302,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: DropdownButton<AiProvider>(
-          underline: const SizedBox.shrink(),
           value: _selectedProvider,
           dropdownColor: AppColors.surface,
           isExpanded: true,
@@ -362,7 +361,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: DropdownButton<String>(
-          underline: const SizedBox.shrink(),
           value: _selectedModel,
           dropdownColor: AppColors.surface,
           isExpanded: true,
