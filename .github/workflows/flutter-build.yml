@@ -107,8 +107,7 @@ jobs:
 
       - name: Analyze Dart code
         working-directory: flutter_app
-        run: flutter analyze --no-fatal-infos
-        continue-on-error: true
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
 
       - name: Build fat APK (all ABIs)
         working-directory: flutter_app

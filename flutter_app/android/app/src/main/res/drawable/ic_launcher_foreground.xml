@@ -5,13 +5,13 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- S-style minimalist logo - a centered letter S shape -->
+    <!-- S-shaped minimalist logo -->
     <path
         android:strokeColor="#00FF41"
         android:strokeWidth="5"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:fillColor="#00000000"
-        android:pathData="M40,38 C40,32 46,28 54,28 C62,28 68,32 68,38 C68,44 62,48 54,48 C46,48 40,52 40,58 C40,64 46,68 54,68 C62,68 68,64 68,58"/>
+        android:pathData="M42,36 C42,30 48,28 54,28 C60,28 66,32 66,38 C66,44 60,48 54,48 C48,48 42,52 42,58 C42,64 48,68 54,68 C60,68 66,64 66,60"/>
 
 </vector>
