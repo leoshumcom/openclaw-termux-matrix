@@ -302,51 +302,51 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: DropdownButton<AiProvider>(
-          underline: const SizedBox.shrink(),
-          value: _selectedProvider,
-          dropdownColor: AppColors.surface,
-          isExpanded: true,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          style: const TextStyle(
-            color: AppColors.matrixGreen,
-            fontSize: 14,
-          ),
-          items: _providers.map((p) {
-            return DropdownMenuItem(
-              value: p,
-              child: Row(
-                children: [
-                  Icon(
-                    p.icon,
-                    size: 18,
-                    color: _selectedProvider.id == p.id
-                        ? AppColors.matrixGreen
-                        : AppColors.mutedText,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(p.name),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (p) {
-            if (p == null) return;
-            setState(() {
-              _selectedProvider = p;
-              _selectedModel = p.defaultModels.first;
-              _testResult = null;
-              _testPassed = false;
-              _configSaved = false;
-            });
+        underline: const SizedBox.shrink(),
+        value: _selectedProvider,
+        dropdownColor: AppColors.surface,
+        isExpanded: true,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        style: const TextStyle(
+          color: AppColors.matrixGreen,
+          fontSize: 14,
+        ),
+        items: _providers.map((p) {
+          return DropdownMenuItem(
+            value: p,
+            child: Row(
+              children: [
+                Icon(
+                  p.icon,
+                  size: 18,
+                  color: _selectedProvider.id == p.id
+                      ? AppColors.matrixGreen
+                      : AppColors.mutedText,
+                ),
+                const SizedBox(width: 12),
+                Text(p.name),
+              ],
+            ),
+          );
+        }).toList(),
+        onChanged: (p) {
+          if (p == null) return;
+          setState(() {
+            _selectedProvider = p;
+            _selectedModel = p.defaultModels.first;
+            _testResult = null;
+            _testPassed = false;
+            _configSaved = false;
+          });
 
-            // 如果之前保存过该供应商的 key，自动填入
-            final savedKey = _prefs.getApiKey(p.id);
-            if (savedKey != null) {
-              _apiKeyController.text = savedKey;
-            } else {
-              _apiKeyController.clear();
-            }
-          }),
+          // 如果之前保存过该供应商的 key，自动填入
+          final savedKey = _prefs.getApiKey(p.id);
+          if (savedKey != null) {
+            _apiKeyController.text = savedKey;
+          } else {
+            _apiKeyController.clear();
+          }
+        },
       ),
     );
   }
@@ -361,38 +361,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: DropdownButton<String>(
-          underline: const SizedBox.shrink(),
-          value: _selectedModel,
-          dropdownColor: AppColors.surface,
-          isExpanded: true,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          style: const TextStyle(
-            color: AppColors.matrixGreen,
-            fontSize: 14,
-          ),
-          items: models.map((m) {
-            return DropdownMenuItem(
-              value: m,
-              child: Text(
-                m,
-                style: TextStyle(
-                  color: _selectedModel == m
-                      ? AppColors.matrixGreen
-                      : AppColors.textSecondary,
-                  fontSize: 13,
-                ),
+        underline: const SizedBox.shrink(),
+        value: _selectedModel,
+        dropdownColor: AppColors.surface,
+        isExpanded: true,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        style: const TextStyle(
+          color: AppColors.matrixGreen,
+          fontSize: 14,
+        ),
+        items: models.map((m) {
+          return DropdownMenuItem(
+            value: m,
+            child: Text(
+              m,
+              style: TextStyle(
+                color: _selectedModel == m
+                    ? AppColors.matrixGreen
+                    : AppColors.textSecondary,
+                fontSize: 13,
               ),
-            );
-          }).toList(),
-          onChanged: (m) {
-            if (m == null) return;
-            setState(() {
-              _selectedModel = m;
-              _testResult = null;
-              _testPassed = false;
-              _configSaved = false;
-            });
-          }),
+            ),
+          );
+        }).toList(),
+        onChanged: (m) {
+          if (m == null) return;
+          setState(() {
+            _selectedModel = m;
+            _testResult = null;
+            _testPassed = false;
+            _configSaved = false;
+          });
+        },
       ),
     );
   }
