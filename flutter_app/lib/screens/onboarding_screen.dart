@@ -91,8 +91,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
 
     try {
-      final result = await ProviderConfigService.testConnection(
-        provider: _selectedProvider,
+      final passed = await ProviderConfigService.testConnection(
+        providerId: _selectedProvider.id,
         apiKey: apiKey,
         model: _selectedModel ?? _selectedProvider.defaultModels.first,
       );
@@ -100,8 +100,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       if (!mounted) return;
       setState(() {
         _isTesting = false;
-        _testResult = result;
-        _testPassed = result.contains('成功') || result.contains('Success');
+        _testResult = passed ? '连接成功 ✓' : '连接失败';
+        _testPassed = passed;
       });
     } catch (e) {
       if (!mounted) return;

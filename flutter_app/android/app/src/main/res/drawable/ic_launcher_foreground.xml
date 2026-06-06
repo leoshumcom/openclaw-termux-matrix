@@ -10,13 +10,7 @@
         android:fillColor="#0D1117"
         android:pathData="M54,54m-44,0a44,44 0 1,0 88,0a44,44 0 1,0 -88,0"/>
 
-    <!-- Glow behind the C/claw -->
-    <path
-        android:fillColor="#00FF41"
-        android:fillAlpha="0.08"
-        android:pathData="M54,54m-34,0a34,34 0 1,0 68,0a34,34 0 1,0 -68,0"/>
-
-    <!-- Outer ring (cyber) -->
+    <!-- Outer ring -->
     <path
         android:strokeColor="#00FF41"
         android:strokeAlpha="0.3"
@@ -24,37 +18,14 @@
         android:fillColor="#00000000"
         android:pathData="M54,20C34.7,20 20,34.7 20,54C20,73.3 34.7,88 54,88C73.3,88 88,73.3 88,54C88,34.7 73.3,20 54,20z"/>
 
-    <!-- The "C" / Claw shape - upper curve -->
+    <!-- S-style minimalist logo - a centered letter S shape -->
+    <!-- Top curve -->
     <path
         android:strokeColor="#00FF41"
-        android:strokeWidth="5"
+        android:strokeWidth="6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:fillColor="#00000000"
-        android:pathData="M68,38 C68,30 58,25 50,32 C42,39 40,50 40,54 C40,58 42,69 50,76 C58,83 68,78 68,70"/>
-
-    <!-- Left claw prong (top) -->
-    <path
-        android:strokeColor="#00FF41"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000"
-        android:pathData="M40,42 L30,38 C27,37 24,38 24,41"/>
-
-    <!-- Left claw prong (bottom) -->
-    <path
-        android:strokeColor="#00FF41"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000"
-        android:pathData="M40,66 L30,70 C27,71 24,70 24,67"/>
-
-    <!-- Terminal cursor blink -->
-    <path
-        android:fillColor="#00FF41"
-        android:fillAlpha="0.6"
-        android:pathData="M74,52 L78,52 L78,56 L74,56 Z"/>
+        android:pathData="M40,38 C40,32 46,28 54,28 C62,28 68,32 68,38 C68,44 62,48 54,48 C46,48 40,52 40,58 C40,64 46,68 54,68 C62,68 68,64 68,58"/>
 
 </vector>
