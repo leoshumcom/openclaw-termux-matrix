@@ -37,6 +37,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup NDK 26
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
+          if [ ! -d "$ANDROID_HOME/ndk/26.3.11579264" ]; then
+            echo "Installing NDK 26.3.11579264..."
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install 'ndk;26.3.11579264'
+          fi
+          echo "NDK version:"
+          ls $ANDROID_HOME/ndk/
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:

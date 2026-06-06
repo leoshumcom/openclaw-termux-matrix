@@ -36,7 +36,7 @@ def hasKeystore = keystoreProperties.containsKey('storeFile') &&
 android {
     namespace = "com.nxg.openclawproot"
     compileSdk = 35
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "26.3.11579264"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
