@@ -38,7 +38,7 @@ class AppConstants {
   static const String rootfsAmd64 = '${ubuntuRootfsUrl}amd64.tar.gz';
 
   // --- Node.js binary tarball (npmmirror.com for CN users) ---
-  static const String nodeVersion = '22.14.0';
+  static const String nodeVersion = '22.19.0';
   static const String nodeBaseUrl =
       'https://npmmirror.com/mirrors/node/v$nodeVersion/node-v$nodeVersion-linux-';
 

@@ -260,8 +260,11 @@ class BootstrapService {
         message: 'Installing OpenClaw (this may take a few minutes)...',
       ));
       // Install openclaw — fork/exec works now with our Termux-matching proot.
+      // npm 10.x may warn about unsupported engines for certain deps
+      // (e.g. undici@8.2.0 requires node >22.19.0). Use --ignore-engines
+      // to treat warnings as non-fatal and skip the EBADENGINE check.
       await NativeBridge.runInProot(
-        '$nodeRun $npmCli install -g openclaw',
+        '$nodeRun $npmCli install -g openclaw --ignore-engines',
         timeout: 1800,
       );
 
