@@ -65,8 +65,8 @@ class AppConstants {
   static const String nodeRole = 'node';
   static const int pairingTimeoutMs = 300000;
 
-  static const String channelName = 'com.openclaw.matrix/native';
-  static const String eventChannelName = 'com.openclaw.matrix/gateway_logs';
+  static const String channelName = 'com.nxg.openclawproot/native';
+  static const String eventChannelName = 'com.nxg.openclawproot/gateway_logs';
 
   /// Monospace font family used across the app
   static const String monoFont = 'monospace';
