@@ -68,6 +68,9 @@ class AppConstants {
   static const String channelName = 'com.openclaw.matrix/native';
   static const String eventChannelName = 'com.openclaw.matrix/gateway_logs';
 
+  /// Monospace font family used across the app
+  static const String monoFont = 'monospace';
+
   static String getRootfsUrl(String arch) {
     switch (arch) {
       case 'aarch64':

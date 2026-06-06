@@ -103,6 +103,19 @@ class PreferencesService {
     // SharedPreferences auto-saves; this is a no-op for compatibility.
   }
 
+  /// Alias: get a stored string value (used by onboarding_screen)
+  Future<void> setString(String key, String value) async {
+    await _prefs.setString(key, value);
+  }
+
+  /// Alias: get a stored string value (used by onboarding_screen)
+  String? getString(String key) {
+    return _prefs.getString(key);
+  }
+
+  /// Alias used by onboarding_screen
+  String? get lastProvider => getString('last_provider');
+
   int? get nodeGatewayPort {
     final val = _prefs.getInt(_keyNodeGatewayPort);
     return val;

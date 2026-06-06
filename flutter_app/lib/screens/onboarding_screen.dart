@@ -346,8 +346,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             } else {
               _apiKeyController.clear();
             }
-          },
-        ),
+          }),
       ),
     );
   }
@@ -393,8 +392,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _testPassed = false;
               _configSaved = false;
             });
-          },
-        ),
+          }),
       ),
     );
   }

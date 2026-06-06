@@ -135,4 +135,10 @@ class AiProvider {
 
   /// All available AI providers.
   static const all = [anthropic, openai, google, openrouter, nvidia, deepseek, xai];
+
+  /// Alias used by onboarding_screen
+  static List<AiProvider> get defaultProviders => all;
+
+  /// Alias used by onboarding_screen
+  List<String> get models => defaultModels;
 }
